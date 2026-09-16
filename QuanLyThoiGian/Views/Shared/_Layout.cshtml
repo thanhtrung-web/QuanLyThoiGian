@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html class="dark" lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>@ViewData["Title"] - ChronoFlow</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface": "#0b1326",
+                        "surface-container-lowest": "#060e20",
+                        "surface-container-low": "#131b2e",
+                        "surface-container": "#171f33",
+                        "surface-container-high": "#222a3d",
+                        "surface-container-highest": "#2d3449",
+                        "on-surface": "#dae2fd",
+                        "on-surface-variant": "#c7c4d7",
+                        "outline": "#908fa0",
+                        "primary": "#c0c1ff",
+                        "primary-container": "#8083ff",
+                        "on-primary": "#1000a9",
+                        "on-primary-container": "#0d0096",
+                        "secondary": "#4edea3",
+                        "secondary-container": "#00a572",
+                        "on-secondary": "#003824",
+                        "tertiary": "#ffb2b7",
+                        "tertiary-container": "#ff516a",
+                        "on-tertiary": "#67001b"
+                    },
+                    fontFamily: {
+                        "sans": ["Plus Jakarta Sans", "sans-serif"],
+                        "timer": ["Space Grotesk", "monospace"]
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased">
+    <!-- Top Header -->
+    <header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-b border-surface-container-high/50">
+        <div class="max-w-4xl mx-auto h-16 px-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-container to-secondary flex items-center justify-center text-on-primary font-bold shadow-lg">
+                    <span class="material-symbols-outlined text-[22px]">hourglass_top</span>
+                </div>
+                <span class="font-bold text-xl tracking-tight text-on-surface">ChronoFlow</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button aria-label="Thông báo" class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">notifications</span>
+                </button>
+                <div class="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center font-semibold text-primary border border-outline/20">
+                    A
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-4xl mx-auto pt-20 pb-28 px-4">
+        @RenderBody()
+    </main>
+
+    <!-- Bottom Navigation Bar (5 tabs chuẩn Stitch) -->
+    <nav class="fixed bottom-0 w-full z-50 bg-surface-container-low/95 backdrop-blur-xl border-t border-surface-container-high/60 shadow-[0_-4px_20px_rgba(0,0,0,0.4)]">
+        <div class="max-w-4xl mx-auto flex items-center justify-around h-16 px-2">
+            <a href="/Task" class="flex flex-col items-center justify-center min-w-[56px] h-12 px-2 rounded-full transition-all duration-200 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Task" ? "text-primary-container font-bold bg-surface-container-highest/60" : "text-on-surface-variant hover:text-on-surface")">
+                <span class="material-symbols-outlined text-[22px]">check_circle</span>
+                <span class="text-[11px] tracking-wide mt-0.5">Việc</span>
+            </a>
+            <a href="#" class="flex flex-col items-center justify-center min-w-[56px] h-12 px-2 rounded-full text-on-surface-variant hover:text-on-surface opacity-50 cursor-not-allowed">
+                <span class="material-symbols-outlined text-[22px]">calendar_month</span>
+                <span class="text-[11px] tracking-wide mt-0.5">Lịch</span>
+            </a>
+            <a href="/Focus" class="flex flex-col items-center justify-center min-w-[56px] h-12 px-2 rounded-full transition-all duration-200 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Focus" ? "text-primary-container font-bold bg-surface-container-highest/60" : "text-on-surface-variant hover:text-on-surface")">
+                <span class="material-symbols-outlined text-[22px]">timer</span>
+                <span class="text-[11px] tracking-wide mt-0.5">Tập trung</span>
+            </a>
+            <a href="#" class="flex flex-col items-center justify-center min-w-[56px] h-12 px-2 rounded-full text-on-surface-variant hover:text-on-surface opacity-50 cursor-not-allowed">
+                <span class="material-symbols-outlined text-[22px]">bar_chart</span>
+                <span class="text-[11px] tracking-wide mt-0.5">Thống kê</span>
+            </a>
+            <a href="#" class="flex flex-col items-center justify-center min-w-[56px] h-12 px-2 rounded-full text-on-surface-variant hover:text-on-surface opacity-50 cursor-not-allowed">
+                <span class="material-symbols-outlined text-[22px]">settings</span>
+                <span class="text-[11px] tracking-wide mt-0.5">Cài đặt</span>
+            </a>
+        </div>
+    </nav>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

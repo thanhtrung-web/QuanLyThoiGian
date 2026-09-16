@@ -1,0 +1,259 @@
+@{
+    ViewData["Title"] = "Focus Pomodoro Timer";
+    var activeTask = ViewBag.ActiveTask as QuanLyThoiGian.Models.Entities.TaskItem;
+    var allTasks = ViewBag.AllTasks as List<QuanLyThoiGian.Models.Entities.TaskItem> ?? new();
+}
+
+<div class="flex flex-col gap-6">
+    <!-- Active Task Linking Card -->
+    <div class="w-full bg-surface-container-low rounded-2xl p-4 shadow-md flex items-center justify-between gap-3 border border-surface-container-high relative overflow-hidden">
+        <div class="absolute left-0 top-0 bottom-0 w-1 bg-primary-container"></div>
+        <div class="flex items-center gap-3 min-w-0 pl-1">
+            <div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center shrink-0 text-primary">
+                <span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">target</span>
+            </div>
+            <div class="flex flex-col min-w-0">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-[11px] text-secondary font-bold uppercase tracking-wider">Đang thực hiện</span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+                </div>
+                <p class="text-sm font-semibold text-on-surface truncate" id="currentTaskTitle">
+                    @(activeTask != null ? activeTask.Title : "Chưa chọn công việc cụ thể")
+                </p>
+            </div>
+        </div>
+        <button onclick="toggleSwitchTaskModal()" class="shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-all">
+            <span class="material-symbols-outlined text-[18px]">swap_horiz</span>
+        </button>
+    </div>
+
+    <!-- Session Mode Segmented Control -->
+    <div class="w-full bg-surface-container-lowest p-1.5 rounded-full flex items-center justify-between gap-1 border border-surface-container-high/40 shadow-inner">
+        <button id="tab-focus" onclick="setMode(25, 'tab-focus')" class="flex-1 py-2 px-2 rounded-full text-xs font-semibold bg-primary-container text-on-primary-container shadow-md flex items-center justify-center gap-1 transition-all">
+            <span class="material-symbols-outlined text-[16px]">psychology</span>
+            <span>Tập trung (25m)</span>
+        </button>
+        <button id="tab-short" onclick="setMode(5, 'tab-short')" class="flex-1 py-2 px-2 rounded-full text-xs font-semibold text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1 transition-all">
+            <span class="material-symbols-outlined text-[16px]">coffee</span>
+            <span>Nghỉ ngắn (5m)</span>
+        </button>
+        <button id="tab-long" onclick="setMode(15, 'tab-long')" class="flex-1 py-2 px-2 rounded-full text-xs font-semibold text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1 transition-all">
+            <span class="material-symbols-outlined text-[16px]">nature_people</span>
+            <span>Nghỉ dài (15m)</span>
+        </button>
+    </div>
+
+    <!-- Hero Circular Timer Section -->
+    <div class="relative w-full flex flex-col items-center justify-center py-4 select-none">
+        <div class="absolute w-64 h-64 rounded-full bg-primary-container/20 blur-3xl pointer-events-none"></div>
+
+        <div class="relative w-[280px] h-[280px] flex items-center justify-center">
+            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 280 280">
+                <defs>
+                    <linearGradient id="timerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#8083ff"></stop>
+                        <stop offset="50%" stop-color="#c0c1ff"></stop>
+                        <stop offset="100%" stop-color="#4edea3"></stop>
+                    </linearGradient>
+                </defs>
+                <circle class="text-surface-container-high" cx="140" cy="140" fill="transparent" r="124" stroke="currentColor" stroke-width="10"></circle>
+                <circle id="timer-ring" class="transition-all duration-1000 ease-linear drop-shadow-[0_0_12px_rgba(128,131,255,0.45)]" cx="140" cy="140" fill="transparent" r="124" stroke="url(#timerGradient)" stroke-dasharray="779.11" stroke-dashoffset="0" stroke-linecap="round" stroke-width="10"></circle>
+            </svg>
+
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span id="timer-status-text" class="text-xs uppercase tracking-widest text-secondary font-bold mb-1 flex items-center gap-1.5">
+                    <span class="inline-block w-2 h-2 rounded-full bg-secondary animate-ping"></span>
+                    Đang sẵn sàng
+                </span>
+                <span id="timer-display" class="font-timer text-6xl font-bold tracking-tight text-on-surface drop-shadow-md tabular-nums">25:00</span>
+                <div class="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant text-xs font-semibold">
+                    <span class="material-symbols-outlined text-[14px] text-primary">hourglass_bottom</span>
+                    <span>Phiên <strong class="text-on-surface" id="sessionNumber">1</strong> / 4</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls Cluster -->
+    <div class="flex items-center justify-center gap-6 w-full mt-2">
+        <button id="btn-reset" onclick="resetTimer()" title="Làm lại" class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface active:scale-95 transition-all shadow-md">
+            <span class="material-symbols-outlined text-[22px]">replay</span>
+        </button>
+
+        <button id="btn-play-pause" onclick="togglePlayPause()" class="w-[72px] h-[72px] rounded-full bg-primary-container text-on-primary flex items-center justify-center active:scale-95 transition-all duration-200 shadow-[0_10px_28px_-4px_rgba(128,131,255,0.5)]">
+            <span id="icon-play-pause" class="material-symbols-outlined text-[38px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+        </button>
+
+        <button id="btn-skip" onclick="skipTimer()" title="Bỏ qua" class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface active:scale-95 transition-all shadow-md">
+            <span class="material-symbols-outlined text-[22px]">skip_next</span>
+        </button>
+    </div>
+
+    <!-- Daily Summary & Motivational Card -->
+    <div class="w-full bg-surface-container-lowest rounded-2xl p-4 mt-2 flex flex-col gap-3 border border-surface-container-high shadow-md">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px] text-secondary">insights</span>
+                <span class="text-xs font-semibold text-on-surface-variant">Thống kê hôm nay</span>
+            </div>
+            <span class="text-xs text-primary font-bold">Mục tiêu: 8 Pomodoro</span>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+            <div class="bg-surface-container-low rounded-xl p-3 flex items-center gap-3 border border-surface-container-high/40">
+                <div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary">
+                    <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                </div>
+                <div class="flex flex-col min-w-0">
+                    <span class="text-lg font-bold text-on-surface" id="completedPomoCount">@(activeTask?.CompletedPomodoros ?? 0)</span>
+                    <span class="text-xs text-on-surface-variant truncate">Hoàn thành</span>
+                </div>
+            </div>
+            <div class="bg-surface-container-low rounded-xl p-3 flex items-center gap-3 border border-surface-container-high/40">
+                <div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">schedule</span>
+                </div>
+                <div class="flex flex-col min-w-0">
+                    <span class="text-lg font-bold text-on-surface" id="totalFocusMinutes">@((activeTask?.CompletedPomodoros ?? 0) * 25) <span class="text-xs font-normal">phút</span></span>
+                    <span class="text-xs text-on-surface-variant truncate">Thời gian tập trung</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Switch Task Modal -->
+<div id="switchTaskModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-surface-container-low border border-surface-container-high w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between">
+            <h3 class="font-bold text-base text-on-surface">Chọn công việc để tập trung</h3>
+            <button onclick="toggleSwitchTaskModal()" class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+        <div class="flex flex-col space-y-2 max-h-60 overflow-y-auto">
+            @foreach (var task in allTasks)
+            {
+                <a href="/Focus?taskId=@task.Id" class="p-3 rounded-xl bg-surface-container hover:bg-surface-container-high flex items-center justify-between transition-all">
+                    <span class="text-sm text-on-surface truncate font-medium">@task.Title</span>
+                    <span class="text-xs text-outline">🍅 @task.CompletedPomodoros/@task.EstimatedPomodoros</span>
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentTaskId = @(activeTask?.Id ?? 0);
+        let duration = 25 * 60;
+        let timeLeft = duration;
+        let isRunning = false;
+        let timerInterval = null;
+        let sessionCount = 1;
+        const circumference = 779.11;
+
+        const timerRing = document.getElementById('timer-ring');
+        const timerDisplay = document.getElementById('timer-display');
+        const iconPlayPause = document.getElementById('icon-play-pause');
+        const statusText = document.getElementById('timer-status-text');
+
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+            const progress = (duration - timeLeft) / duration;
+            const offset = circumference * (1 - progress);
+            timerRing.style.strokeDashoffset = offset;
+        }
+
+        function togglePlayPause() {
+            if (isRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            isRunning = true;
+            iconPlayPause.textContent = 'pause';
+            statusText.innerHTML = '<span class="inline-block w-2 h-2 rounded-full bg-secondary"></span> Đang tập trung';
+
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateDisplay();
+                } else {
+                    onSessionComplete();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            iconPlayPause.textContent = 'play_arrow';
+            statusText.innerHTML = '<span class="inline-block w-2 h-2 rounded-full bg-amber-400"></span> Đã tạm dừng';
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timeLeft = duration;
+            updateDisplay();
+            statusText.innerHTML = '<span class="inline-block w-2 h-2 rounded-full bg-secondary animate-ping"></span> Sẵn sàng';
+        }
+
+        function skipTimer() {
+            pauseTimer();
+            onSessionComplete();
+        }
+
+        async function onSessionComplete() {
+            clearInterval(timerInterval);
+            isRunning = false;
+            iconPlayPause.textContent = 'play_arrow';
+            alert('🎉 Chúc mừng bạn đã hoàn thành phiên tập trung!');
+
+            if (currentTaskId > 0) {
+                await fetch('/Focus/CompletePomodoro', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'taskId=' + currentTaskId
+                });
+            }
+
+            sessionCount++;
+            document.getElementById('sessionNumber').textContent = (sessionCount % 4) || 4;
+            setMode(5, 'tab-short');
+        }
+
+        function setMode(minutes, activeTabId) {
+            pauseTimer();
+            duration = minutes * 60;
+            timeLeft = duration;
+            updateDisplay();
+
+            ['tab-focus', 'tab-short', 'tab-long'].forEach(id => {
+                const btn = document.getElementById(id);
+                btn.className = "flex-1 py-2 px-2 rounded-full text-xs font-semibold text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1 transition-all";
+            });
+
+            const activeBtn = document.getElementById(activeTabId);
+            if (activeTabId === 'tab-focus') {
+                activeBtn.className = "flex-1 py-2 px-2 rounded-full text-xs font-semibold bg-primary-container text-on-primary-container shadow-md flex items-center justify-center gap-1 transition-all";
+            } else {
+                activeBtn.className = "flex-1 py-2 px-2 rounded-full text-xs font-semibold bg-secondary-container text-white shadow-md flex items-center justify-center gap-1 transition-all";
+            }
+        }
+
+        function toggleSwitchTaskModal() {
+            const modal = document.getElementById('switchTaskModal');
+            modal.classList.toggle('hidden');
+            modal.classList.toggle('flex');
+        }
+
+        updateDisplay();
+    </script>
+}
